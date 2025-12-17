@@ -1,0 +1,155 @@
+# API 1: Simple REST API
+microk8s kubectl apply -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api1-rest
+  namespace: api-apps
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api1
+  template:
+    metadata:
+      labels:
+        app: api1
+    spec:
+      containers:
+      - name: api1
+        image: python:3.9-slim
+        ports:
+        - containerPort: 80
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            pip install flask > /dev/null 2>&1
+            python -c "
+            from flask import Flask
+            app = Flask(__name__)
+            @app.route('/health')
+            def health():
+                return {'status': 'healthy'}
+            @app.route('/api/v1/data')
+            def data():
+                return {'message': 'API 1 data'}
+            if __name__ == '__main__':
+                app.run(host='0.0.0.0', port=80)
+            "
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html
+        configMap:
+          name: api1-html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api1-html
+  namespace: api-apps
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>API 1</title></head>
+    <body style="background-color: #e8f5e9;">
+      <h1>API 1 - REST Service</h1>
+      <p>Hostname: <strong>$(hostname)</strong></p>
+      <p>Endpoints: /health, /api/v1/data</p>
+    </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api1-service
+  namespace: api-apps
+spec:
+  selector:
+    app: api1
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+# API 2: Another REST API
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api2-rest
+  namespace: api-apps
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api2
+  template:
+    metadata:
+      labels:
+        app: api2
+    spec:
+      containers:
+      - name: api2
+        image: python:3.9-slim
+        ports:
+        - containerPort: 80
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            pip install flask > /dev/null 2>&1
+            python -c "
+            from flask import Flask
+            app = Flask(__name__)
+            @app.route('/health')
+            def health():
+                return {'status': 'healthy'}
+            @app.route('/api/v1/status')
+            def status():
+                return {'message': 'API 2 status'}
+            if __name__ == '__main__':
+                app.run(host='0.0.0.0', port=80)
+            "
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html
+        configMap:
+          name: api2-html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api2-html
+  namespace: api-apps
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>API 2</title></head>
+    <body style="background-color: #f3e5f5;">
+      <h1>API 2 - REST Service</h1>
+      <p>Hostname: <strong>$(hostname)</strong></p>
+      <p>Endpoints: /health, /api/v1/status</p>
+    </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api2-service
+  namespace: api-apps
+spec:
+  selector:
+    app: api2
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+EOF

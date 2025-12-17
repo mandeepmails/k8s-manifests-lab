@@ -1,0 +1,42 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api1-ingress
+  namespace: api-apps
+  annotations:
+    kubernetes.io/ingress.class: "public"
+spec:
+  ingressClassName: public
+  rules:
+  - host: api1.sample.lan
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api1-service
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api2-ingress
+  namespace: api-apps
+  annotations:
+    kubernetes.io/ingress.class: "public"
+spec:
+  ingressClassName: public
+  rules:
+  - host: api2.sample.lan
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api2-service
+            port:
+              number: 80

@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: booklore
+spec: {}
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booklore
+  namespace: booklore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booklore
+  template:
+    metadata:
+      labels:
+        app: booklore
+    spec:
+      containers:
+      - name: booklore
+        image: booklore/booklore:latest
+        env:
+        - name: DATABASE_URL
+          value: "jdbc:mariadb://mariadb:3306/booklore"
+        - name: DATABASE_USERNAME
+          value: "booklore"
+        - name: DATABASE_PASSWORD
+          value: "booklorepassword"
+        - name: BOOKLORE_PORT
+          value: "6060"
+        - name: TZ
+          value: "Asia/Kolkata"
+        ports:
+        - containerPort: 6060
+        volumeMounts:
+        - name: books
+          mountPath: /books
+        - name: backdrop
+          mountPath: /home/bookdrop
+      volumes:
+      - name: books
+        hostPath:
+          path: /mnt/8000SAM1/8000/stuff-study/Docs_Devnet/booklore/books
+          type: DirectoryOrCreate
+     #   persistentVolumeClaim:
+     #     claimName: pvc-books
+      - name: backdrop
+        hostPath:
+          path: /mnt/8000SAM1/8000/stuff-study/Docs_Devnet/booklore/backdrop
+          type: DirectoryOrCreate
+     #   persistentVolumeClaim:
+     #     claimName: pvc-backdrop
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booklore
+  namespace: booklore
+spec:
+  type: LoadBalancer
+  selector:
+    app: booklore
+  ports:
+    - protocol: TCP
+      port: 6060
+      targetPort: 6060     

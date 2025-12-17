@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: booklore
+spec: {}
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: booklore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:11.4.5
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "securepassword"
+        - name: MYSQL_DATABASE
+          value: "booklore"
+        - name: MYSQL_USER
+          value: "booklore"
+        - name: MYSQL_PASSWORD
+          value: "booklorepassword"
+        volumeMounts:
+        - name: mariadb-config
+          mountPath: /config
+        ports:
+        - containerPort: 3306
+      volumes:
+      - name: mariadb-config
+        persistentVolumeClaim:
+          claimName: pvc-mariadb-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: booklore
+spec:
+  selector:
+    app: mariadb
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306   

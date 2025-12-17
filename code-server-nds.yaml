@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: code-server 
+spec: {}
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-server
+  namespace: code-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: code-server
+  template:
+    metadata:
+      labels:
+        app: code-server
+    spec:
+      containers:
+        - name: code-server
+          image: codercom/code-server:latest
+          volumeMounts:
+          - name: my8000
+            mountPath: /8000
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PASSWORD
+              value: "welcome"  # Set a strong password
+      volumes:
+      - name: my8000
+        hostPath:
+          path: /mnt/8000SAM1/8000/
+          type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-server-service
+  namespace: code-server
+spec:
+  selector:
+    app: code-server
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080   

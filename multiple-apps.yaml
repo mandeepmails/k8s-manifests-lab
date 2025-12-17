@@ -1,0 +1,208 @@
+---
+# App 1: Nginx
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1-nginx
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html
+        configMap:
+          name: app1-html
+---
+# App 1: ConfigMap for custom HTML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app1-html
+  namespace: default
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>App 1 - Nginx</title></head>
+    <body style="background-color: #e3f2fd;">
+      <h1>🚀 App 1 - Nginx Server</h1>
+      <p>Hostname: <strong>app1.sample.local</strong></p>
+      <p>This is running on Pod: <strong>$(hostname)</strong></p>
+    </body>
+    </html>
+---
+# App 1: Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-service
+  namespace: default
+spec:
+  selector:
+    app: app1
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+# App 2: Apache
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app2-apache
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app2
+  template:
+    metadata:
+      labels:
+        app: app2
+    spec:
+      containers:
+      - name: apache
+        image: httpd:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/local/apache2/htdocs
+      volumes:
+      - name: html
+        configMap:
+          name: app2-html
+---
+# App 2: ConfigMap for custom HTML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app2-html
+  namespace: default
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>App 2 - Apache</title></head>
+    <body style="background-color: #f3e5f5;">
+      <h1>🔥 App 2 - Apache Server</h1>
+      <p>Hostname: <strong>app2.sample.local</strong></p>
+      <p>This is running on Pod: <strong>$(hostname)</strong></p>
+    </body>
+    </html>
+---
+# App 2: Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: app2-service
+  namespace: default
+spec:
+  selector:
+    app: app2
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+# App 3: Simple Python Flask App
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app3-flask
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app3
+  template:
+    metadata:
+      labels:
+        app: app3
+    spec:
+      containers:
+      - name: flask
+        image: python:3.9-slim
+        ports:
+        - containerPort: 5000
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            pip install flask > /dev/null 2>&1
+            python -c "
+            from flask import Flask
+            app = Flask(__name__)
+            @app.route('/')
+            def hello():
+                return '''<!DOCTYPE html>
+                <html>
+                <head><title>App 3 - Flask</title></head>
+                <body style=\"background-color: #e8f5e9;\">
+                  <h1>⚡ App 3 - Flask Server</h1>
+                  <p>Hostname: <strong>app3.sample.local</strong></p>
+                  <p>This is running on Pod: <strong>''' + __import__('socket').gethostname() + '''</strong></p>
+                </body>
+                </html>'''
+            if __name__ == '__main__':
+                app.run(host='0.0.0.0', port=5000)
+            "
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html
+        configMap:
+          name: app3-html
+---
+# App 3: ConfigMap for custom HTML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app3-html
+  namespace: default
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>App 3 - Flask</title></head>
+    <body style="background-color: #e8f5e9;">
+      <h1>⚡ App 3 - Flask Server</h1>
+      <p>Hostname: <strong>app3.sample.local</strong></p>
+      <p>This is running on Pod: <strong>$(hostname)</strong></p>
+    </body>
+    </html>
+---
+# App 3: Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: app3-service
+  namespace: default
+spec:
+  selector:
+    app: app3
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+  type: LoadBalancer

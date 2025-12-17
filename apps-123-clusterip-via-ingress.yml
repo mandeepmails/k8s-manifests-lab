@@ -1,0 +1,60 @@
+---
+# Ingress for App 1
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app1-ingress
+  namespace: default
+spec:
+  ingressClassName: public
+  rules:
+  - host: app1.sample.lan
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+---
+# Ingress for App 2
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app2-ingress
+  namespace: default
+spec:
+  ingressClassName: public
+  rules:
+  - host: app2.sample.lan
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app2-service
+            port:
+              number: 80
+---
+# Ingress for App 3
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app3-ingress
+  namespace: default
+spec:
+  ingressClassName: public
+  rules:
+  - host: app3.sample.lan
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app3-service
+            port:
+              number: 80

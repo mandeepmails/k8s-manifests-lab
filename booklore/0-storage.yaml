@@ -1,0 +1,46 @@
+# Based on typical usage and the BookLore documentation:
+
+# data (app metadata): 5–10 GiB — sufficient for metadata, user data, and database (MariaDB).
+# books (eBook library): Allocate based on your collection. Average eBook is ~2–5 MB; 1 GiB ≈ 200–500 books. Start with 20–50 GiB and expand as needed.
+# bookdrop (import folder): 5–10 GiB — only temporary storage for incoming files.
+# mariadb/config: 1–2 GiB — minimal space needed for DB config and logs.
+# Adjust based on your library size and growth plans.
+
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: pvc-books
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 20Gi
+#  storageClassName: microk8s-hostpath
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: pvc-backdrop
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 5Gi
+#  storageClassName: microk8s-hostpath
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-mariadb-config
+  namespace: booklore
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: microk8s-hostpath
+  # DONT GIVE VOLUMENAME FOR MARIADB
