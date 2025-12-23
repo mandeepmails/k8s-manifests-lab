@@ -1,0 +1,14 @@
+persistence:
+  config:
+    enabled: true
+    size: 5Gi
+    existingClaim: jellyfin-config-pvc
+    storageClass: microk8s-hostpath  # Default in microk8s
+  media:
+    enabled: true
+    type: hostPath
+    hostPath: /mnt/8000SAM1/8000
+
+service:
+  type: LoadBalancer
+  port: 8096

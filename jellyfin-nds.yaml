@@ -6,6 +6,33 @@ metadata:
 spec: {}
 status: {}
 ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-config-pv
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /opt/jellyfin/config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-config-pvc
+  namespace: jellyfin
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: jellyfin-config-pv
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,10 +55,15 @@ spec:
       - image: jellyfin/jellyfin
         name: jellyfin
         resources: {}
-        volumeMounts: 
+        volumeMounts:
+        - name: jellyfin-config
+          mountPath: /config 
         - name: my8000
           mountPath: /8000
       volumes:
+        - name: jellyfin-config
+          persistentVolumeClaim:
+            claimName: jellyin-config-pvc 
         - name: my8000
           hostPath:
             path: /mnt/8000SAM1/8000
