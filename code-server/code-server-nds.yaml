@@ -26,6 +26,8 @@ spec:
           volumeMounts:
           - name: my8000
             mountPath: /8000
+          - name: code-server-storage
+            mountPath: /home/coder/.config/code-server
           ports:
             - containerPort: 8080
           env:
@@ -36,6 +38,9 @@ spec:
         hostPath:
           path: /mnt/8000SAM1/8000/
           type: Directory
+      - name: code-server-storage
+        persistentVolumeClaim:
+          claimName: code-server-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -49,4 +54,4 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8080   
+      targetPort: 8080
